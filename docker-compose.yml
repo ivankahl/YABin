@@ -1,20 +1,32 @@
 version: '3.3'
-networks:
-  yabin-network:
-    name: yabin-network
-    ipam:
-      driver: default
 services:
   yabin:
-    container_name: yabin
-    ports:
-      - '${PORT:-3000}:${PORT:-3000}'
+    expose:
+      - '$PORT'
     image: 'yureien/yabin:latest'
-    env_file: .env
+    environment:
+      PORT=$PORT
+      SALT=$SALT
+      DB_PROVIDER=postgres
+      DB_NAME=$DB_NAME
+      DB_HOST=db
+      DB_USER=$DB_USER
+      DB_PASSWORD=$DB_PASSWORD
+      DATABASE_URL=${DB_PROVIDER}://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:5432?schema=public
+      MAIL_ENABLED=$MAIL_ENABLED
+      MAIL_SERVER=$MAIL_PORT
+      MAIL_PORT=$MAIL_PORT
+      MAIL_USE_SSL=$MAIL_USE_SSL
+      MAIL_USERNAME=$MAIL_USERNAME
+      MAIL_PASSWORD=$MAIL_PASSWORD
+      MAIL_FROM=$MAIL_FROM
+      PUBLIC_REGISTRATION_ENABLED=$PUBLIC_REGISTRATION_ENABLED
+      PUBLIC_CUSTOM_PATHS_ENABLED=$PUBLIC_CUSTOM_PATHS_ENABLED
+      PUBLIC_ANONYMOUS_PASTES_ENABLED=$PUBLIC_ANONYMOUS_PASTES_ENABLED
+      PUBLIC_URL=$PUBLIC_URL
+      ORIGIN=$ORIGIN
     depends_on:
       - db
-    networks:
-      - yabin-network
   db:
     container_name: yabin-db
     restart: always
@@ -23,11 +35,9 @@ services:
     expose:
       - '5432'
     environment:
-      POSTGRES_USER: ${DB_USER:-yabin_user}
-      POSTGRES_PASSWORD: ${DB_USER_PASS:-123}
-      POSTGRES_DB: ${DB_NAME:-yabin_db}
+      POSTGRES_USER: $DB_USER
+      POSTGRES_PASSWORD: $DB_PASSWORD
+      POSTGRES_DB: $DB_NAME
       POSTGRES_HOST_AUTH_METHOD: "trust"
     volumes:
       - ./db-data:/var/lib/postgresql/data
-    networks:
-      - yabin-network
